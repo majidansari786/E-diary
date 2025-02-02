@@ -57,13 +57,20 @@
             <div class="col-md-6 right-panel">
                 <h5 class="text-center">Login</h5>
                 <form method="POST">
+                    {% with messages = get_flashed_messages()%}
+                        {% if messages %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ messages[0] }}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" name="username" required>
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">email</label>
-                        <input type="password" class="form-control" name="email" required>
+                        <label for="password" class="form-label">password</label>
+                        <input type="password" class="form-control" name="password" required>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Login</button>
                     <p class="text-center mt-3">Don't have an account? Register now!</p>
