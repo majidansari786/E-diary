@@ -48,7 +48,7 @@
                     <tr>
                         <th scope="row">{{ loop.index }}</th>
                         <td>{{ diary.date_created }}</td>
-                        <td>{{ diary.diary_data }}</td>
+                        <td><a href="/diary/user/{{diary.created_by}}/{{diary.id}}">view</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
