@@ -18,7 +18,7 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ml-auto">
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('your_diary') }}">Your Diaries</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('create') }}">Create</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
@@ -39,7 +39,7 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Author</th>
+                        <th scope="col">Date</th>
                         <th scope="col">Content</th>
                     </tr>
                 </thead>
@@ -47,7 +47,7 @@
                     {% for diary in diaries %}
                     <tr>
                         <th scope="row">{{ loop.index }}</th>
-                        <td>{{ diary.created_by }}</td>
+                        <td>{{ diary.date_created }}</td>
                         <td>{{ diary.diary_data }}</td>
                     </tr>
                     {% endfor %}
