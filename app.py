@@ -3,11 +3,16 @@ from markupsafe import Markup
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import bcrypt
+import os
+import re
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key'
+SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("No FLASK_SECRET_KEY set for Flask application. Please set this environment variable.")
+app.config['SECRET_KEY'] = SECRET_KEY
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -15,7 +20,7 @@ login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
     username = db.Column(db.String(50), primary_key=True)
-    email = db.Column(db.String(50))
+    email = db.Column(db.String(50), unique=True) # Added unique=True here
     password = db.Column(db.String(100))
     
     def __init__(self,email,password,username):
@@ -50,20 +55,34 @@ def index():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    error = None
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
+
+        # Email format validation
+        email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not re.match(email_regex, email):
+            flash('Invalid email format.', 'danger')
+            return redirect(url_for('register'))
+
+        # Email uniqueness check
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            flash('Email address already registered.', 'danger')
+            return redirect(url_for('register'))
+        
+        # Username uniqueness check
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
             flash('Username already exists', 'danger')
-            return redirect('/register')
+            return redirect(url_for('register'))
+        
         user = User(username=username, email=email, password=password)
         db.session.add(user)
         db.session.commit()
         flash('user sucessfully created', 'success')
-        return redirect('/login')
+        return redirect(url_for('login'))
     return render_template('register.html')
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -76,7 +95,8 @@ def login():
         
         # Check if fields are empty
         if not username or not password:
-            return "Please fill in all fields", 400
+            flash('Please fill in all fields', 'danger')
+            return redirect(url_for('login'))
         
         user = User.query.filter_by(username=username).first()
         
