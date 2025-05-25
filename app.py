@@ -7,6 +7,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 import bcrypt
 import os
 import re
+import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -19,6 +20,10 @@ app.config['SECRET_KEY'] = SECRET_KEY
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.datetime.utcnow().year}
 
 class User(UserMixin, db.Model):
     username = db.Column(db.String(50), primary_key=True)
