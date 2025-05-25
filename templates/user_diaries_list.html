@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Your Diaries{% endblock %}
+{% block title %}Diaries for {{ target_user.username }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Your Diaries</h2>
+    <h2>Diaries for {{ target_user.username }}</h2>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -19,7 +19,11 @@
 
     {% if not diaries %}
         <div class="alert alert-info" role="alert">
-            No diaries found. <a href="{{ url_for('create') }}" class="alert-link">Add your first diary now!</a>
+            {% if current_user.is_authenticated and current_user.username == target_user.username %}
+                You haven't written any diaries yet. <a href="{{ url_for('create') }}" class="alert-link">Create your first entry!</a>
+            {% else %}
+                {{ target_user.username }} has not made any public diaries.
+            {% endif %}
         </div>
     {% else %}
         <div class="list-group">
@@ -27,23 +31,28 @@
                 <a href="{{ url_for('diary', username=diary.created_by, diary_id=diary.id) }}" class="list-group-item list-group-item-action flex-column align-items-start">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">
-                            Diary Entry 
-                            {% if diary.is_private %}
+                            Diary Entry
+                            {% if current_user.is_authenticated and current_user.username == target_user.username and diary.is_private %}
                                 <span class="badge bg-secondary">Private</span>
-                            {% else %}
+                            {% elif not diary.is_private %}
                                 <span class="badge bg-primary">Public</span>
                             {% endif %}
+                            {# If current_user != target_user, only public diaries are shown by backend #}
                         </h5>
                         <small>{{ diary.date_created.strftime('%Y-%m-%d %H:%M') }}</small>
                     </div>
-                    <p class="mb-1">{{ diary.diary_data[:150] }}{% if diary.diary_data|length > 150 %}...{% endif %}</p> <!-- Show a snippet -->
+                    <p class="mb-1">{{ diary.diary_data[:150] }}{% if diary.diary_data|length > 150 %}...{% endif %}</p>
                     <small>By: {{ diary.created_by }}</small>
                 </a>
             {% endfor %}
         </div>
     {% endif %}
+
     <div class="mt-3">
-        <a href="{{ url_for('create') }}" class="btn btn-success">Create New Diary Entry</a>
+        {% if current_user.is_authenticated and current_user.username == target_user.username %}
+            <a href="{{ url_for('create') }}" class="btn btn-success">Create New Diary Entry</a>
+        {% endif %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 </div>
 {% endblock %}

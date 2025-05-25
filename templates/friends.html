@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Friends{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Friends</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Received Friend Requests -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>Received Friend Requests</h4>
+        </div>
+        <div class="card-body">
+            {% if received_requests %}
+                <ul class="list-group">
+                    {% for user in received_requests %}
+                        {% set request_id = friendship_ids_map.get(user.username) %}
+                        {% if request_id %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ user.username }}
+                                <div>
+                                    <form action="{{ url_for('accept_friend_request', request_id=request_id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-success btn-sm me-2">Accept</button>
+                                    </form>
+                                    <form action="{{ url_for('reject_friend_request', request_id=request_id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                </div>
+                            </li>
+                        {% else %}
+                             <li class="list-group-item">Error: Could not find request ID for {{ user.username }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No pending friend requests.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sent Friend Requests -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>Sent Friend Requests</h4>
+        </div>
+        <div class="card-body">
+            {% if sent_requests %}
+                <ul class="list-group">
+                    {% for user in sent_requests %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ user.username }}
+                            <span class="badge bg-secondary">Request Sent</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You haven't sent any friend requests yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Your Friends -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>Your Friends</h4>
+        </div>
+        <div class="card-body">
+            {% if current_friends %}
+                <ul class="list-group">
+                    {% for friend in current_friends %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('user_diaries', username=friend.username) }}">{{ friend.username }}</a>
+                            <form action="{{ url_for('remove_friend', friend_username=friend.username) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-warning btn-sm">Remove Friend</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You don't have any friends yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Discover People -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4>Discover People</h4>
+        </div>
+        <div class="card-body">
+            {% if potential_friends %}
+                <ul class="list-group">
+                    {% for p_user in potential_friends %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ p_user.username }}
+                            <form action="{{ url_for('send_friend_request', target_username=p_user.username) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary btn-sm">Send Request</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No new people to discover right now, or everyone is already connected or has pending requests!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+</div>
+{% endblock %}
